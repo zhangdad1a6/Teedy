@@ -146,6 +146,28 @@
         <version>${org.apache.maven.plugins.maven-project-info-reports-plugin.version}</version>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.15.0</version> 
+        <configuration>
+          <rulesets>
+            <ruleset>E:\CS304\Teedy\customize-rules.xml</ruleset> 
+          </rulesets>
+          <failOnViolation>false</failOnViolation>
+          <sourceEncoding>UTF-8</sourceEncoding>
+          <targetJdk>11</targetJdk>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>pmd</goal>
+              <goal>check</goal> 
+            </goals>
+          </execution>
+        </executions>
+      </plugin>      
+
     </plugins>
   </build>
 
@@ -175,6 +197,13 @@
         </reportSet>
       </reportSets>
     </plugin>
+
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-pmd-plugin</artifactId>
+      <version>3.15.0</version>
+    </plugin>
+
   </plugins>
 </reporting>
 
