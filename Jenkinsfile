@@ -21,7 +21,7 @@ pipeline {
                 sh 'mvn pmd:pmd'
             }
         }
-        stage('Jacoco') {
+        stage('JaCoCo') {
             steps {
                 sh 'mvn jacoco:report'
             }
@@ -50,4 +50,4 @@ pipeline {
             junit '**/target/surefire-reports/*.xml'
         }
     }
-}
+ }
