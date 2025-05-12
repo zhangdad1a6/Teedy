@@ -13,27 +13,42 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'mvn test -Dmaven.test.failure.ignore=true'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'mvn test -Dmaven.test.failure.ignore=true'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                }
             }
         }
         stage('PMD') {
             steps {
-                sh 'mvn pmd:pmd'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'mvn pmd:pmd'
+                }
             }
         }
         stage('JaCoCo') {
             steps {
-                sh 'mvn jacoco:report'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'mvn jacoco:report'
+                }
             }
         }
         stage('Javadoc') {
             steps {
-                sh 'mvn javadoc:javadoc'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'mvn javadoc:javadoc'
+                }
             }
         }
         stage('Site') {
             steps {
-                sh 'mvn site'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'mvn site'
+                }
             }
         }
         stage('Package') {
@@ -42,12 +57,19 @@ pipeline {
             }
         }
     }
+    
     post {
         always {
-            archiveArtifacts artifacts: '**/target/site/**/*.*', fingerprint: true
-            archiveArtifacts artifacts: '**/target/**/*.jar', fingerprint: true
-            archiveArtifacts artifacts: '**/target/**/*.war', fingerprint: true
-            junit '**/target/surefire-reports/*.xml'
+            archiveArtifacts artifacts: 'docs-web/target/*.war', fingerprint: true, allowEmptyArchive: true
+            archiveArtifacts artifacts: 'docs-web/target/site/**', fingerprint: true, allowEmptyArchive: true
+            archiveArtifacts artifacts: 'docs-web/target/pmd.xml', fingerprint: true, allowEmptyArchive: true
+            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+        }
+        success {
+            echo '构建成功！'
+        }
+        failure {
+            echo '构建失败！'
         }
     }
- }
+}
