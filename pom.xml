@@ -156,7 +156,7 @@
         <version>3.15.0</version> 
         <configuration>
           <rulesets>
-            <ruleset>E:\CS304\Teedy\customize-rules.xml</ruleset> 
+            <ruleset>${project.basedir}/customize-rules.xml</ruleset> 
           </rulesets>
           <failOnViolation>false</failOnViolation>
           <sourceEncoding>UTF-8</sourceEncoding>
