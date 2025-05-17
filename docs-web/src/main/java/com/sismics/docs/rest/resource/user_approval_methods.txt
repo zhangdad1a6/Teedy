@@ -1,0 +1,83 @@
+/**
+ * Approve a disabled user by clearing disable date.
+ *
+ * @api {post} /user/:username/approve Approve a user (enable account)
+ * @apiName PostUserApprove
+ * @apiGroup User
+ * @apiParam {String} username Username
+ * @apiSuccess {String} status Status OK
+ * @apiError (client) ForbiddenError Access denied
+ * @apiError (client) UserNotFound The user does not exist
+ * @apiPermission admin
+ * @apiVersion 1.5.0
+ *
+ * @param username Username
+ * @return Response
+ */
+@POST
+@Path("{username: [a-zA-Z0-9_@.-]+}/approve")
+@Produces(MediaType.APPLICATION_JSON)
+public Response approveUser(@PathParam("username") String username) {
+    if (!authenticate()) {
+        throw new ForbiddenClientException();
+    }
+    checkBaseFunction(BaseFunction.ADMIN);
+
+    UserDao userDao = new UserDao();
+    User user = userDao.getActiveByUsername(username);
+    if (user == null || user.getDeleteDate() != null) {
+        throw new ClientException("UserNotFound", "The user does not exist");
+    }
+
+    // 若用户当前是禁用状态（即待审核），则设为启用
+    if (user.getDisableDate() != null) {
+        user.setDisableDate(null);
+        userDao.update(user, principal.getId());
+    }
+
+    JsonObjectBuilder response = Json.createObjectBuilder()
+            .add("status", "ok");
+    return Response.ok(response.build()).build();
+}
+
+/**
+ * Reject a user registration request by setting delete date.
+ *
+ * @api {post} /user/:username/reject Reject a user registration request
+ * @apiName PostUserReject
+ * @apiGroup User
+ * @apiParam {String} username Username
+ * @apiSuccess {String} status Status OK
+ * @apiError (client) ForbiddenError Access denied
+ * @apiError (client) UserNotFound The user does not exist
+ * @apiPermission admin
+ * @apiVersion 1.5.0
+ *
+ * @param username Username
+ * @return Response
+ */
+@POST
+@Path("{username: [a-zA-Z0-9_@.-]+}/reject")
+@Produces(MediaType.APPLICATION_JSON)
+public Response rejectUser(@PathParam("username") String username) {
+    if (!authenticate()) {
+        throw new ForbiddenClientException();
+    }
+    checkBaseFunction(BaseFunction.ADMIN);
+
+    UserDao userDao = new UserDao();
+    User user = userDao.getActiveByUsername(username);
+    if (user == null) {
+        throw new ClientException("UserNotFound", "The user does not exist");
+    }
+
+    // 拒绝 = 设置删除时间（软删除）
+    if (user.getDeleteDate() == null) {
+        user.setDeleteDate(new Date());
+        userDao.update(user, principal.getId());
+    }
+
+    JsonObjectBuilder response = Json.createObjectBuilder()
+            .add("status", "ok");
+    return Response.ok(response.build()).build();
+}

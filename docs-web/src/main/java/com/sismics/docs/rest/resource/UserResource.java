@@ -257,6 +257,90 @@ public class UserResource extends BaseResource {
     }
 
     /**
+     * Approve a disabled user by clearing disable date.
+     *
+     * @api {post} /user/:username/approve Approve a user (enable account)
+     * @apiName PostUserApprove
+     * @apiGroup User
+     * @apiParam {String} username Username
+     * @apiSuccess {String} status Status OK
+     * @apiError (client) ForbiddenError Access denied
+     * @apiError (client) UserNotFound The user does not exist
+     * @apiPermission admin
+     * @apiVersion 1.5.0
+     *
+     * @param username Username
+     * @return Response
+     */
+    @POST
+    @Path("{username: [a-zA-Z0-9_@.-]+}/approve")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response approveUser(@PathParam("username") String username) {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        checkBaseFunction(BaseFunction.ADMIN);
+
+        UserDao userDao = new UserDao();
+        User user = userDao.getActiveByUsername(username);
+        if (user == null || user.getDeleteDate() != null) {
+            throw new ClientException("UserNotFound", "The user does not exist");
+        }
+
+        // 若用户当前是禁用状态（即待审核），则设为启用
+        if (user.getDisableDate() != null) {
+            user.setDisableDate(null);
+            userDao.update(user, principal.getId());
+        }
+
+        JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("status", "ok");
+        return Response.ok(response.build()).build();
+    }
+
+    /**
+     * Reject a user registration request by setting delete date.
+     *
+     * @api {post} /user/:username/reject Reject a user registration request
+     * @apiName PostUserReject
+     * @apiGroup User
+     * @apiParam {String} username Username
+     * @apiSuccess {String} status Status OK
+     * @apiError (client) ForbiddenError Access denied
+     * @apiError (client) UserNotFound The user does not exist
+     * @apiPermission admin
+     * @apiVersion 1.5.0
+     *
+     * @param username Username
+     * @return Response
+     */
+    @POST
+    @Path("{username: [a-zA-Z0-9_@.-]+}/reject")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response rejectUser(@PathParam("username") String username) {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        checkBaseFunction(BaseFunction.ADMIN);
+
+        UserDao userDao = new UserDao();
+        User user = userDao.getActiveByUsername(username);
+        if (user == null) {
+            throw new ClientException("UserNotFound", "The user does not exist");
+        }
+
+        // 拒绝 = 设置删除时间（软删除）
+        if (user.getDeleteDate() == null) {
+            user.setDeleteDate(new Date());
+            userDao.update(user, principal.getId());
+        }
+
+        JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("status", "ok");
+        return Response.ok(response.build()).build();
+    }
+
+    /**
      * This resource is used to authenticate the user and create a user session.
      * The "session" is only used to identify the user, no other data is stored in
      * the session.
@@ -772,6 +856,57 @@ public class UserResource extends BaseResource {
 
         UserDao userDao = new UserDao();
         List<UserDto> userDtoList = userDao.findByCriteria(new UserCriteria().setGroupId(groupId), sortCriteria);
+        for (UserDto userDto : userDtoList) {
+            users.add(Json.createObjectBuilder()
+                    .add("id", userDto.getId())
+                    .add("username", userDto.getUsername())
+                    .add("email", userDto.getEmail())
+                    .add("totp_enabled", userDto.getTotpKey() != null)
+                    .add("storage_quota", userDto.getStorageQuota())
+                    .add("storage_current", userDto.getStorageCurrent())
+                    .add("create_date", userDto.getCreateTimestamp())
+                    .add("disabled", userDto.getDisableTimestamp() != null));
+        }
+
+        JsonObjectBuilder response = Json.createObjectBuilder()
+                .add("users", users);
+        return Response.ok().entity(response.build()).build();
+    }
+
+    /**
+     * Returns all disabled users waiting for approval.
+     *
+     * @api {get} /user/approval List all users waiting for approval
+     * @apiName GetUserApproval
+     * @apiGroup User
+     * @apiSuccess {Object[]} users List of users
+     * @apiSuccess {String} users.id ID
+     * @apiSuccess {String} users.username Username
+     * @apiSuccess {String} users.email E-mail
+     * @apiSuccess {Boolean} users.totp_enabled If TOTP is enabled
+     * @apiSuccess {Number} users.storage_quota Storage quota
+     * @apiSuccess {Number} users.storage_current Storage currently used
+     * @apiSuccess {Number} users.create_date Create date (timestamp)
+     * @apiSuccess {Boolean} users.disabled If the user is disabled
+     * @apiError (client) ForbiddenError Access denied
+     * @apiPermission admin
+     * @apiVersion 1.5.0
+     *
+     * @return Response
+     */
+    @GET
+    @Path("approval")
+    public Response listApproval() {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        checkBaseFunction(BaseFunction.ADMIN);
+
+        JsonArrayBuilder users = Json.createArrayBuilder();
+        SortCriteria sortCriteria = new SortCriteria(0, true);
+
+        UserDao userDao = new UserDao();
+        List<UserDto> userDtoList = userDao.findByCriteria(new UserCriteria().setOnlyDisabled(true), sortCriteria);
         for (UserDto userDto : userDtoList) {
             users.add(Json.createObjectBuilder()
                     .add("id", userDto.getId())

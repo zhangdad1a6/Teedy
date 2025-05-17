@@ -1,0 +1,25 @@
+<div class="container-fluid">
+  <h2>用户审核</h2>
+  <p ng-if="users.length === 0" class="text-muted">当前没有待审核的用户申请</p>
+  <table class="table table-striped" ng-if="users.length > 0">
+    <thead>
+    <tr>
+      <th>用户名</th>
+      <th>邮箱</th>
+      <th>注册时间</th>
+      <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="user in users">
+      <td>{{user.username}}</td>
+      <td>{{user.email}}</td>
+      <td>{{user.create_date | date:'yyyy-MM-dd HH:mm'}}</td>
+      <td>
+        <button class="btn btn-success btn-sm" ng-click="approve(user.username)">通过</button>
+        <button class="btn btn-danger btn-sm" ng-click="reject(user.username)">拒绝</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
