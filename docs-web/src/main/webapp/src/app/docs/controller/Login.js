@@ -72,8 +72,12 @@ angular.module('docs').controller('Login', function(Restangular, $scope, $rootSc
         var title = $translate.instant('login.password_lost_error_title');
         var msg = $translate.instant('login.password_lost_error_message');
         var btns = [{result: 'ok', label: $translate.instant('ok'), cssClass: 'btn-primary'}];
-        $dialog.messageBox(title, msg, btns);
-      });
+        $dialog.messageBox(title, msg, btns);      });
     });
+  };
+  
+  // Go to register page
+  $scope.goToRegister = function () {
+    $state.go('register');
   };
 });

@@ -14,7 +14,8 @@
     "password_lost_sent_title": "密码重置邮件已发送",
     "password_lost_sent_message": "重置密码的邮件已经发送至<strong>{{ username }}</strong>",
     "password_lost_error_title": "密码重置出错",
-    "password_lost_error_message": "无法发送密码重置邮件，请联系您的管理员进行手动重置"
+    "password_lost_error_message": "无法发送密码重置邮件，请联系您的管理员进行手动重置",
+    "register": "注册"
   },
   "passwordlost": {
     "title": "丢失密码",
@@ -236,17 +237,21 @@
   },
   "settings": {
     "menu_personal_settings": "个人设置",
-    "menu_user_account": "用户帐号",
-    "menu_two_factor_auth": "双重身份验证",
-    "menu_opened_sessions": "已打开会话",
-    "menu_general_settings": "一般设置",
+    "menu_user_account": "用户账户",
+    "menu_two_factor_auth": "两步验证",
+    "menu_opened_sessions": "打开会话",
+    "menu_file_importer": "文件导入器",
+    "menu_general_settings": "综合设置",
     "menu_workflow": "工作流程",
     "menu_users": "用户",
     "menu_groups": "群组",
-    "menu_vocabularies": "词条",
+    "menu_vocabularies": "词汇表",
     "menu_configuration": "配置",
-    "menu_inbox": "收件箱扫描",
-    "menu_server_logs": "服务器日志",
+    "menu_inbox": "邮箱",
+    "menu_metadata": "元数据",
+    "menu_monitoring": "监控",
+    "menu_ldap": "LDAP目录",
+    "menu_user_approval": "用户审批",
     "user": {
       "title": "用户 <small>管理</small>",
       "add_user": "添加用户",
